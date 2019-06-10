@@ -1,0 +1,701 @@
+package com.rtmart.txd.barcode;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+
+public class TxdBarcodePrintUI
+  extends JFrame
+{
+  private static final long serialVersionUID = 1L;
+  private JPanel contentPane;
+  public static JTextField textSeqStart;
+  public static JTextField textSeqEnd;
+  public int comboIndex = 0;
+  public static String regExpWuLiuXiang = "^\\d{1,6}$";
+  public static String regExpYuanGongHao = "^\\d{1,6}$";
+  public static String regExpJianHuoDai = "^\\d{1,4}$";
+  public static String regExpDaoKou = "^\\d{1,3}$";
+  public static String regExpHouCangGongHao = "^\\d{1,6}$";
+  public static String regExpJianHuoQu = "[Kk][1-9]{1}$";
+  public static String regExpZouDao = "^[1-9][0-9]|[1-9]|[0][1-9]$";
+  public static String regExpBei = "^[1-9][0-9]|[1-9]|[0][1-9]$";
+  public static String regExpLiaoWei = "^[1-9][0-9]|[1-9]|[0][1-9]$";
+  public static String regExpOldJianHuoDai = "^\\d{1,6}$";
+  public static boolean txt1RegErr = false;
+  public static boolean txt2RegErr = false;
+  public static boolean txt4RegErr = false;
+  public static boolean txt5RegErr = false;
+  public static boolean txt6RegErr = false;
+  public static boolean txt7RegErr = false;
+  public static boolean txt8RegErr = false;
+  public static JTextField textField4;
+  public static JTextField textField5;
+  public static JTextField textField6;
+  public static JTextField textField7;
+  public static JTextField textField8;
+  
+  public static class TextThread
+    extends Thread
+  {
+    public void run()
+    {
+      for (;;)
+      {
+        try
+        {
+          sleep(20L);
+        }
+        catch (InterruptedException e)
+        {
+          e.printStackTrace();
+        }
+        if (TxdBarcodePrintUI.txt1RegErr)
+        {
+          TxdBarcodePrintUI.textSeqStart.setText(null);
+          JOptionPane.showMessageDialog(null, "起始序列号错误，请重新输入");
+          TxdBarcodePrintUI.txt1RegErr = false;
+        }
+        if (TxdBarcodePrintUI.txt2RegErr)
+        {
+          TxdBarcodePrintUI.textSeqEnd.setText(null);
+          JOptionPane.showMessageDialog(null, "结束序列号错误，请重新输入");
+          TxdBarcodePrintUI.txt2RegErr = false;
+        }
+        if (TxdBarcodePrintUI.txt4RegErr)
+        {
+          switch (TxdBarcodePrintUI.textField4.getText().length())
+          {
+          case 1: 
+            if (!TxdBarcodePrintUI.textField4.getText().equals("k"))
+            {
+              JOptionPane.showMessageDialog(null, "拣货区号码首位必须是K，请重新输入");
+              TxdBarcodePrintUI.textField4.setText(null);
+            }
+            break;
+          default: 
+            JOptionPane.showMessageDialog(null, "拣货区号码不符合规则（K1-K9)，请重新输入");
+            TxdBarcodePrintUI.textField4.setText(null);
+          }
+          TxdBarcodePrintUI.txt4RegErr = false;
+        }
+        if (TxdBarcodePrintUI.txt5RegErr)
+        {
+          TxdBarcodePrintUI.textField5.setText(null);
+          JOptionPane.showMessageDialog(null, "走道号码不符合规则（1-99)，请重新输入");
+          TxdBarcodePrintUI.txt5RegErr = false;
+        }
+        if (TxdBarcodePrintUI.txt6RegErr)
+        {
+          TxdBarcodePrintUI.textField6.setText(null);
+          JOptionPane.showMessageDialog(null, "背号不符合规则（1-99)，请重新输入");
+          TxdBarcodePrintUI.txt6RegErr = false;
+        }
+        if (TxdBarcodePrintUI.txt7RegErr)
+        {
+          TxdBarcodePrintUI.textField7.setText(null);
+          JOptionPane.showMessageDialog(null, "起始料位号号码不符合规则（1-99)，请重新输入");
+          TxdBarcodePrintUI.txt7RegErr = false;
+        }
+        if (TxdBarcodePrintUI.txt8RegErr)
+        {
+          TxdBarcodePrintUI.textField8.setText(null);
+          JOptionPane.showMessageDialog(null, "结束料位号号码不符合规则，请重新输入");
+          TxdBarcodePrintUI.txt8RegErr = false;
+        }
+      }
+    }
+  }
+  
+  public boolean checkRegExp(String str, int i)
+  {
+    switch (i)
+    {
+    case 0: 
+      if (!str.matches(regExpWuLiuXiang)) {
+        return true;
+      }
+      break;
+    case 1: 
+      if (!str.matches(regExpDaoKou)) {
+        return true;
+      }
+      break;
+    case 2: 
+      if (!str.matches(regExpYuanGongHao)) {
+        return true;
+      }
+      break;
+    case 3: 
+      if (!str.matches(regExpJianHuoDai)) {
+        return true;
+      }
+      break;
+    case 5: 
+      if (!str.matches(regExpHouCangGongHao)) {
+        return true;
+      }
+      break;
+    case 6: 
+      if (!str.matches(regExpOldJianHuoDai)) {
+        return true;
+      }
+      break;
+    }
+    return false;
+  }
+  
+  public static void main(String[] args)
+  {
+    EventQueue.invokeLater(new Runnable()
+    {
+      public void run()
+      {
+        try
+        {
+          TxdBarcodePrintUI frame = new TxdBarcodePrintUI();
+          frame.setVisible(true);
+          Thread resetText = new TxdBarcodePrintUI.TextThread();
+          resetText.start();
+        }
+        catch (Exception e)
+        {
+          e.printStackTrace();
+        }
+      }
+    });
+  }
+  
+  public TxdBarcodePrintUI()
+  {
+    setDefaultCloseOperation(3);
+    setBounds(500, 200, 800, 500);
+    this.contentPane = new JPanel();
+    this.contentPane.setBorder(new EmptyBorder(1, 1, 1, 1));
+    this.contentPane.setLayout(new BorderLayout(0, 0));
+    setContentPane(this.contentPane);
+    
+    JPanel panel = new JPanel();
+    panel.setBorder(null);
+    panel.setBackground(Color.LIGHT_GRAY);
+    this.contentPane.add(panel, "Center");
+    GridBagLayout gbl_panel = new GridBagLayout();
+    gbl_panel.columnWidths = new int[] { 100, 145, 80, 60, 60, 60, 60, 60, 100 };
+    gbl_panel.rowHeights = new int[] { 100, 40, 40, 40, 40, 40, 40, 30 };
+    gbl_panel.columnWeights = new double[] { 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, Double.MIN_VALUE };
+    gbl_panel.rowWeights = new double[] { 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, Double.MIN_VALUE };
+    panel.setLayout(gbl_panel);
+    
+    JLabel labelTitle = new JLabel("淘鲜达条码列印");
+    labelTitle.setFont(new Font("宋体", 1, 27));
+    GridBagConstraints gbc_labelTitle = new GridBagConstraints();
+    gbc_labelTitle.gridwidth = 7;
+    gbc_labelTitle.anchor = 11;
+    gbc_labelTitle.insets = new Insets(0, 0, 5, 0);
+    gbc_labelTitle.gridx = 1;
+    gbc_labelTitle.gridy = 0;
+    panel.add(labelTitle, gbc_labelTitle);
+    
+    JLabel label1 = new JLabel("请选择列印条码类别");
+    label1.setFont(new Font("����", 0, 22));
+    GridBagConstraints gbc_label1 = new GridBagConstraints();
+    gbc_label1.gridwidth = 2;
+    gbc_label1.insets = new Insets(0, 0, 5, 5);
+    gbc_label1.gridx = 1;
+    gbc_label1.gridy = 1;
+    panel.add(label1, gbc_label1);
+    
+    String[] str = { "1.物流箱条码", "2.道口条码", "3.优鲜工号条码", "4.拣货袋条码（店号开头）", "5.快捡仓料位号", "6.后仓工号条码", "7.旧拣货袋条码（DD开头）" };
+    
+    final JComboBox comboBox = new JComboBox(str);
+    comboBox.setFont(new Font("宋体", 0, 20));
+    GridBagConstraints gbc_comboBox = new GridBagConstraints();
+    gbc_comboBox.fill = 1;
+    gbc_comboBox.gridwidth = 4;
+    gbc_comboBox.insets = new Insets(0, 0, 5, 5);
+    gbc_comboBox.gridx = 3;
+    gbc_comboBox.gridy = 1;
+    panel.add(comboBox, gbc_comboBox);
+    
+    final JLabel label2 = new JLabel("请输入列印范围：");
+    label2.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_label2 = new GridBagConstraints();
+    gbc_label2.gridwidth = 2;
+    gbc_label2.insets = new Insets(0, 0, 5, 5);
+    gbc_label2.gridx = 1;
+    gbc_label2.gridy = 2;
+    panel.add(label2, gbc_label2);
+    
+    textSeqStart = new JTextField();
+    textSeqStart.setHorizontalAlignment(0);
+    textSeqStart.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_textSeqStart = new GridBagConstraints();
+    gbc_textSeqStart.gridwidth = 2;
+    gbc_textSeqStart.fill = 1;
+    gbc_textSeqStart.insets = new Insets(0, 0, 5, 5);
+    gbc_textSeqStart.gridx = 3;
+    gbc_textSeqStart.gridy = 2;
+    panel.add(textSeqStart, gbc_textSeqStart);
+    textSeqStart.setColumns(8);
+    
+    textSeqStart.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        TxdBarcodePrintUI.txt1RegErr = TxdBarcodePrintUI.this.checkRegExp(TxdBarcodePrintUI.textSeqStart.getText(), TxdBarcodePrintUI.this.comboIndex);
+        if (TxdBarcodePrintUI.textSeqStart.getText().isEmpty()) {
+          TxdBarcodePrintUI.textSeqStart.setText("1");
+        }
+        TxdBarcodePrintUI.textSeqEnd.requestFocus();
+      }
+    });
+    textSeqStart.addCaretListener(new CaretListener()
+    {
+      public void caretUpdate(CaretEvent e)
+      {
+        if (!TxdBarcodePrintUI.textSeqStart.getText().isEmpty()) {
+          TxdBarcodePrintUI.txt1RegErr = TxdBarcodePrintUI.this.checkRegExp(TxdBarcodePrintUI.textSeqStart.getText(), TxdBarcodePrintUI.this.comboIndex);
+        }
+      }
+    });
+    final JLabel label3 = new JLabel("-");
+    label3.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_label3 = new GridBagConstraints();
+    gbc_label3.insets = new Insets(0, 0, 5, 5);
+    gbc_label3.gridx = 5;
+    gbc_label3.gridy = 2;
+    panel.add(label3, gbc_label3);
+    
+    textSeqEnd = new JTextField();
+    textSeqEnd.setHorizontalAlignment(0);
+    textSeqEnd.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_textSeqEnd = new GridBagConstraints();
+    gbc_textSeqEnd.gridwidth = 2;
+    gbc_textSeqEnd.fill = 1;
+    gbc_textSeqEnd.insets = new Insets(0, 0, 5, 5);
+    gbc_textSeqEnd.gridx = 6;
+    gbc_textSeqEnd.gridy = 2;
+    panel.add(textSeqEnd, gbc_textSeqEnd);
+    textSeqEnd.setColumns(8);
+    
+    textSeqEnd.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        TxdBarcodePrintUI.txt2RegErr = TxdBarcodePrintUI.this.checkRegExp(TxdBarcodePrintUI.textSeqEnd.getText(), TxdBarcodePrintUI.this.comboIndex);
+        if (TxdBarcodePrintUI.textSeqEnd.getText().isEmpty()) {
+          TxdBarcodePrintUI.textSeqEnd.setText("1");
+        }
+        if (Integer.parseInt(TxdBarcodePrintUI.textSeqEnd.getText()) < Integer.parseInt(TxdBarcodePrintUI.textSeqStart.getText()))
+        {
+          TxdBarcodePrintUI.textSeqEnd.setText(null);
+          JOptionPane.showMessageDialog(null, "结束序号不能小于起始序号，请重新输入");
+          return;
+        }
+      }
+    });
+    textSeqEnd.addCaretListener(new CaretListener()
+    {
+      public void caretUpdate(CaretEvent e)
+      {
+        if (!TxdBarcodePrintUI.textSeqEnd.getText().isEmpty()) {
+          TxdBarcodePrintUI.txt2RegErr = TxdBarcodePrintUI.this.checkRegExp(TxdBarcodePrintUI.textSeqEnd.getText(), TxdBarcodePrintUI.this.comboIndex);
+        }
+      }
+    });
+    final JLabel label4 = new JLabel("拣货区");
+    label4.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_label4 = new GridBagConstraints();
+    gbc_label4.anchor = 13;
+    gbc_label4.fill = 3;
+    gbc_label4.insets = new Insets(0, 0, 5, 5);
+    gbc_label4.gridx = 2;
+    gbc_label4.gridy = 3;
+    panel.add(label4, gbc_label4);
+    label4.setVisible(false);
+    
+    textField4 = new JTextField();
+    textField4.setFont(new Font("宋体", 0, 20));
+    GridBagConstraints gbc_textField4 = new GridBagConstraints();
+    gbc_textField4.fill = 1;
+    gbc_textField4.insets = new Insets(0, 0, 5, 5);
+    gbc_textField4.gridx = 3;
+    gbc_textField4.gridy = 3;
+    panel.add(textField4, gbc_textField4);
+    textField4.setColumns(3);
+    textField4.setVisible(false);
+    
+    textField4.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        if (TxdBarcodePrintUI.textField4.getText().isEmpty()) {
+          JOptionPane.showMessageDialog(null, "必须输入拣货区号");
+        }
+        TxdBarcodePrintUI.txt4RegErr = !TxdBarcodePrintUI.textField4.getText().matches(TxdBarcodePrintUI.regExpJianHuoQu);
+        TxdBarcodePrintUI.textField5.requestFocus();
+      }
+    });
+    textField4.addCaretListener(new CaretListener()
+    {
+      public void caretUpdate(CaretEvent e)
+      {
+        if (!TxdBarcodePrintUI.textField4.getText().isEmpty()) {
+          switch (TxdBarcodePrintUI.textField4.getText().length())
+          {
+          case 1: 
+            TxdBarcodePrintUI.txt4RegErr = !TxdBarcodePrintUI.textField4.getText().matches("^[K]$");
+            break;
+          default: 
+            TxdBarcodePrintUI.txt4RegErr = !TxdBarcodePrintUI.textField4.getText().matches(TxdBarcodePrintUI.regExpJianHuoQu);
+          }
+        }
+      }
+    });
+    final JLabel label5 = new JLabel("走道");
+    label5.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_label5 = new GridBagConstraints();
+    gbc_label5.fill = 3;
+    gbc_label5.insets = new Insets(0, 0, 5, 5);
+    gbc_label5.gridx = 4;
+    gbc_label5.gridy = 3;
+    panel.add(label5, gbc_label5);
+    label5.setVisible(false);
+    
+    textField5 = new JTextField();
+    textField5.setFont(new Font("宋体", 0, 20));
+    GridBagConstraints gbc_textField5 = new GridBagConstraints();
+    gbc_textField5.insets = new Insets(0, 0, 5, 5);
+    gbc_textField5.fill = 1;
+    gbc_textField5.gridx = 5;
+    gbc_textField5.gridy = 3;
+    panel.add(textField5, gbc_textField5);
+    textField5.setColumns(3);
+    textField5.setVisible(false);
+    textField5.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        TxdBarcodePrintUI.txt5RegErr = !TxdBarcodePrintUI.textField5.getText().matches(TxdBarcodePrintUI.regExpZouDao);
+        TxdBarcodePrintUI.textField6.requestFocus();
+      }
+    });
+    textField5.addCaretListener(new CaretListener()
+    {
+      public void caretUpdate(CaretEvent e)
+      {
+        if (!TxdBarcodePrintUI.textField5.getText().isEmpty()) {
+          switch (TxdBarcodePrintUI.textField5.getText().length())
+          {
+          case 1: 
+            TxdBarcodePrintUI.txt5RegErr = !TxdBarcodePrintUI.textField5.getText().matches("^[0-9]$");
+            break;
+          default: 
+            TxdBarcodePrintUI.txt5RegErr = !TxdBarcodePrintUI.textField5.getText().matches(TxdBarcodePrintUI.regExpZouDao);
+          }
+        }
+      }
+    });
+    final JLabel label6 = new JLabel("背");
+    label6.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_label6 = new GridBagConstraints();
+    gbc_label6.fill = 3;
+    gbc_label6.insets = new Insets(0, 0, 5, 5);
+    gbc_label6.gridx = 6;
+    gbc_label6.gridy = 3;
+    panel.add(label6, gbc_label6);
+    label6.setVisible(false);
+    
+    textField6 = new JTextField();
+    textField6.setFont(new Font("宋体", 0, 20));
+    GridBagConstraints gbc_textField6 = new GridBagConstraints();
+    gbc_textField6.insets = new Insets(0, 0, 5, 5);
+    gbc_textField6.fill = 1;
+    gbc_textField6.gridx = 7;
+    gbc_textField6.gridy = 3;
+    panel.add(textField6, gbc_textField6);
+    textField6.setColumns(3);
+    textField6.setVisible(false);
+    textField6.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        TxdBarcodePrintUI.txt6RegErr = !TxdBarcodePrintUI.textField6.getText().matches(TxdBarcodePrintUI.regExpBei);
+        TxdBarcodePrintUI.textField7.requestFocus();
+      }
+    });
+    textField6.addCaretListener(new CaretListener()
+    {
+      public void caretUpdate(CaretEvent e)
+      {
+        if (!TxdBarcodePrintUI.textField6.getText().isEmpty()) {
+          switch (TxdBarcodePrintUI.textField6.getText().length())
+          {
+          case 1: 
+            TxdBarcodePrintUI.txt6RegErr = !TxdBarcodePrintUI.textField6.getText().matches("^[0-9]$");
+            break;
+          default: 
+            TxdBarcodePrintUI.txt6RegErr = !TxdBarcodePrintUI.textField6.getText().matches(TxdBarcodePrintUI.regExpBei);
+          }
+        }
+      }
+    });
+    final JLabel label7 = new JLabel("料位");
+    label7.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_label7 = new GridBagConstraints();
+    gbc_label7.anchor = 13;
+    gbc_label7.fill = 3;
+    gbc_label7.insets = new Insets(0, 0, 5, 5);
+    gbc_label7.gridx = 2;
+    gbc_label7.gridy = 4;
+    panel.add(label7, gbc_label7);
+    label7.setVisible(false);
+    
+    textField7 = new JTextField();
+    textField7.setFont(new Font("宋体", 0, 20));
+    GridBagConstraints gbc_textField7 = new GridBagConstraints();
+    gbc_textField7.insets = new Insets(0, 0, 5, 5);
+    gbc_textField7.fill = 1;
+    gbc_textField7.gridx = 3;
+    gbc_textField7.gridy = 4;
+    panel.add(textField7, gbc_textField7);
+    textField7.setColumns(3);
+    textField7.setVisible(false);
+    textField7.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        TxdBarcodePrintUI.txt7RegErr = !TxdBarcodePrintUI.textField7.getText().matches(TxdBarcodePrintUI.regExpLiaoWei);
+        TxdBarcodePrintUI.textField8.requestFocus();
+      }
+    });
+    textField7.addCaretListener(new CaretListener()
+    {
+      public void caretUpdate(CaretEvent e)
+      {
+        if (!TxdBarcodePrintUI.textField7.getText().isEmpty()) {
+          switch (TxdBarcodePrintUI.textField7.getText().length())
+          {
+          case 1: 
+            TxdBarcodePrintUI.txt7RegErr = !TxdBarcodePrintUI.textField7.getText().matches("^[0-9]$");
+            break;
+          default: 
+            TxdBarcodePrintUI.txt7RegErr = !TxdBarcodePrintUI.textField7.getText().matches(TxdBarcodePrintUI.regExpLiaoWei);
+          }
+        }
+      }
+    });
+    final JLabel label8 = new JLabel("-");
+    label8.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_label8 = new GridBagConstraints();
+    gbc_label8.fill = 3;
+    gbc_label8.insets = new Insets(0, 0, 5, 5);
+    gbc_label8.gridx = 4;
+    gbc_label8.gridy = 4;
+    panel.add(label8, gbc_label8);
+    label8.setVisible(false);
+    
+    textField8 = new JTextField();
+    textField8.setFont(new Font("宋体", 0, 20));
+    GridBagConstraints gbc_textField8 = new GridBagConstraints();
+    gbc_textField8.insets = new Insets(0, 0, 5, 5);
+    gbc_textField8.fill = 1;
+    gbc_textField8.gridx = 5;
+    gbc_textField8.gridy = 4;
+    panel.add(textField8, gbc_textField8);
+    textField8.setColumns(3);
+    textField8.setVisible(false);
+    textField8.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        TxdBarcodePrintUI.txt8RegErr = !TxdBarcodePrintUI.textField8.getText().matches(TxdBarcodePrintUI.regExpLiaoWei);
+        if (Integer.parseInt(TxdBarcodePrintUI.textField8.getText()) < Integer.parseInt(TxdBarcodePrintUI.textField7.getText()))
+        {
+          TxdBarcodePrintUI.textField8.setText(null);
+          JOptionPane.showMessageDialog(null, "结束料位号不能小于起始料位号！");
+          return;
+        }
+      }
+    });
+    textField8.addCaretListener(new CaretListener()
+    {
+      public void caretUpdate(CaretEvent e)
+      {
+        if (!TxdBarcodePrintUI.textField8.getText().isEmpty()) {
+          switch (TxdBarcodePrintUI.textField8.getText().length())
+          {
+          case 1: 
+            TxdBarcodePrintUI.txt8RegErr = !TxdBarcodePrintUI.textField8.getText().matches("^[0-9]$");
+            break;
+          default: 
+            TxdBarcodePrintUI.txt8RegErr = !TxdBarcodePrintUI.textField8.getText().matches(TxdBarcodePrintUI.regExpLiaoWei);
+          }
+        }
+      }
+    });
+    JButton btnPrint = new JButton("打印");
+    btnPrint.setFont(new Font("宋体", 0, 22));
+    GridBagConstraints gbc_btnPrint = new GridBagConstraints();
+    gbc_btnPrint.fill = 2;
+    gbc_btnPrint.gridwidth = 2;
+    gbc_btnPrint.insets = new Insets(0, 0, 5, 5);
+    gbc_btnPrint.gridx = 3;
+    gbc_btnPrint.gridy = 6;
+    panel.add(btnPrint, gbc_btnPrint);
+    
+    comboBox.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        TxdBarcodePrintUI.this.comboIndex = comboBox.getSelectedIndex();
+        TxdBarcodePrintUI.textSeqStart.setText(null);
+        TxdBarcodePrintUI.textSeqEnd.setText(null);
+        TxdBarcodePrintUI.textField4.setText(null);
+        TxdBarcodePrintUI.textField5.setText(null);
+        TxdBarcodePrintUI.textField6.setText(null);
+        TxdBarcodePrintUI.textField7.setText(null);
+        TxdBarcodePrintUI.textField8.setText(null);
+        switch (TxdBarcodePrintUI.this.comboIndex)
+        {
+        case 0: 
+        case 1: 
+        case 2: 
+        case 3: 
+        case 5: 
+        case 6: 
+          label4.setVisible(false);
+          label5.setVisible(false);
+          label6.setVisible(false);
+          label7.setVisible(false);
+          label8.setVisible(false);
+          TxdBarcodePrintUI.textField4.setVisible(false);
+          TxdBarcodePrintUI.textField5.setVisible(false);
+          TxdBarcodePrintUI.textField6.setVisible(false);
+          TxdBarcodePrintUI.textField7.setVisible(false);
+          TxdBarcodePrintUI.textField8.setVisible(false);
+          label2.setVisible(true);
+          label3.setVisible(true);
+          TxdBarcodePrintUI.textSeqStart.setVisible(true);
+          TxdBarcodePrintUI.textSeqEnd.setVisible(true);
+          break;
+        case 4: 
+          label4.setVisible(true);
+          label5.setVisible(true);
+          label6.setVisible(true);
+          label7.setVisible(true);
+          label8.setVisible(true);
+          TxdBarcodePrintUI.textField4.setVisible(true);
+          TxdBarcodePrintUI.textField5.setVisible(true);
+          TxdBarcodePrintUI.textField6.setVisible(true);
+          TxdBarcodePrintUI.textField7.setVisible(true);
+          TxdBarcodePrintUI.textField8.setVisible(true);
+          label2.setVisible(false);
+          label3.setVisible(false);
+          TxdBarcodePrintUI.textSeqStart.setVisible(false);
+          TxdBarcodePrintUI.textSeqEnd.setVisible(false);
+        }
+      }
+    });
+    btnPrint.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        Print prt = new Print();
+        switch (TxdBarcodePrintUI.this.comboIndex)
+        {
+        case 4: 
+          if ((TxdBarcodePrintUI.textField4.getText().isEmpty()) || (TxdBarcodePrintUI.textField5.getText().isEmpty()) || (TxdBarcodePrintUI.textField6.getText().isEmpty()) || 
+            (TxdBarcodePrintUI.textField7.getText().isEmpty()) || (TxdBarcodePrintUI.textField8.getText().isEmpty()))
+          {
+            JOptionPane.showMessageDialog(null, "������������������������������������");
+            return;
+          }
+          if (Integer.parseInt(TxdBarcodePrintUI.textField8.getText()) < Integer.parseInt(TxdBarcodePrintUI.textField7.getText()))
+          {
+            TxdBarcodePrintUI.textField8.setText(null);
+            JOptionPane.showMessageDialog(null, "������������������������������");
+            return;
+          }
+          for (int i = Integer.parseInt(TxdBarcodePrintUI.textField7.getText()); i <= 
+                Integer.parseInt(TxdBarcodePrintUI.textField8.getText()); i++) {
+            if (!prt.barcodePrint(TxdBarcodePrintUI.textField4.getText(), Integer.parseInt(TxdBarcodePrintUI.textField5.getText()), Integer.parseInt(TxdBarcodePrintUI.textField6.getText()), i)) {
+              return;
+            }
+          }
+          break;
+        default: 
+          if ((TxdBarcodePrintUI.textSeqStart.getText().isEmpty()) || (TxdBarcodePrintUI.textSeqEnd.getText().isEmpty()))
+          {
+            JOptionPane.showMessageDialog(null, "������������������������������������");
+            return;
+          }
+          if (Integer.parseInt(TxdBarcodePrintUI.textSeqEnd.getText()) > Integer.parseInt(TxdBarcodePrintUI.textSeqStart.getText()) + 100)
+          {
+            TxdBarcodePrintUI.textSeqEnd.setText(null);
+            JOptionPane.showMessageDialog(null, "��������������������������������100����������������������������");
+            return;
+          }
+          if (Integer.parseInt(TxdBarcodePrintUI.textSeqEnd.getText()) < Integer.parseInt(TxdBarcodePrintUI.textSeqStart.getText()))
+          {
+            TxdBarcodePrintUI.textSeqEnd.setText(null);
+            JOptionPane.showMessageDialog(null, "��������������������������");
+            return;
+          }
+          for (int i = Integer.parseInt(TxdBarcodePrintUI.textSeqStart.getText()); i <= 
+                Integer.parseInt(TxdBarcodePrintUI.textSeqEnd.getText()); i++) {
+            if (!prt.barcodePrint(i, TxdBarcodePrintUI.this.comboIndex)) {
+              return;
+            }
+          }
+        }
+        TxdBarcodePrintUI.textSeqStart.setText(null);
+        TxdBarcodePrintUI.textSeqEnd.setText(null);
+        TxdBarcodePrintUI.textField4.setText(null);
+        TxdBarcodePrintUI.textField5.setText(null);
+        TxdBarcodePrintUI.textField6.setText(null);
+        TxdBarcodePrintUI.textField7.setText(null);
+        TxdBarcodePrintUI.textField8.setText(null);
+      }
+    });
+    JButton btnExit = new JButton("����");
+    btnExit.setFont(new Font("����", 0, 22));
+    GridBagConstraints gbc_btnExit = new GridBagConstraints();
+    gbc_btnExit.fill = 2;
+    gbc_btnExit.gridwidth = 2;
+    gbc_btnExit.insets = new Insets(0, 0, 5, 5);
+    gbc_btnExit.gridx = 6;
+    gbc_btnExit.gridy = 6;
+    panel.add(btnExit, gbc_btnExit);
+    
+    btnExit.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        System.exit(0);
+      }
+    });
+    JLabel labelVer = new JLabel("Ver 1.22");
+    labelVer.setFont(new Font("����", 0, 15));
+    GridBagConstraints gbc_labelVer = new GridBagConstraints();
+    gbc_labelVer.gridx = 8;
+    gbc_labelVer.gridy = 7;
+    panel.add(labelVer, gbc_labelVer);
+  }
+}
